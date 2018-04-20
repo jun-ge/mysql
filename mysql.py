@@ -1,31 +1,26 @@
 import pymysql
 
 
-class Usermsg:
-    def __init__(self, userid, username, useremail, userpassword, userphone):
-        self.userid = userid
-        self.username = username
-        self.userpassword = userpassword
-        self.userphone = userpassword
-        self.useremail = useremail
-
-    def showmsg(self):
-        pass
+# class Usermsg:
+#     def __init__(self, userid, username, useremail, userpassword, userphone):
+#         self.userid = userid
+#         self.username = username
+#         self.userpassword = userpassword
+#         self.userphone = userpassword
+#         self.useremail = useremail
+#
+#     def showmsg(self):
+#         pass
 
 
 class DbOperate:
-    def __init__(self, host, port, user, passwd, dbs, charset):
-        self.host = host
-        self.port = port
-        self.user = user
-        self.passwd = passwd
-        self.dbs = dbs
-        self.charset = charset
-        self.getconn()
+    def __init__(self, path):
+        with open(path, "r") as fr:
+            for host in fr:
+                host = host.strip().split()
 
-    def getconn(self):
-        self.db = pymysql.connect(host=self.host, port=int(self.port), user=self.user, passwd=self.passwd, db=self.dbs,
-                                  charset=self.charset)
+        self.db = pymysql.connect(host=host[0], port=int(host[1]), user=host[2],
+                                  passwd=host[3], db=host[4], charset='utf8')
         self.cur = self.db.cursor()
 
     def close(self):
@@ -52,12 +47,14 @@ class DbOperate:
 
     # 单条插入
     def insert_one(self, name, email, paswd, phone):
-        try:
-            sql = "INSERT INTO usermsg (USERNAME, EMAIL, PASSWORD, PHONE) values ('{}',{},{},{})".format(name, email, paswd, phone)
-            self.cur.execute(sql)
-            self.db.commit()
-        except:
-            self.db.rollback()
+        sql = "INSERT INTO usermsg (USERNAME,EMAIL,PASSWORD,PHONE) values ('{}','{}','{}','{}')".format(name, email,
+                                                                                                        paswd, phone)
+        print(sql)
+        self.cur.execute(sql)
+        self.db.commit()
+
+        # self.db.rollback()
+        # print("cuowu ")
 
     # 批量插入
     def insert(self, lst):
@@ -78,23 +75,8 @@ class DbOperate:
 
 
 if __name__ == '__main__':
-
-    hosts = []
-    with open("host", "r") as fr:
-        for host in fr:
-            host = host.split()
-            hosts.append(host)
-
-    HOST = hosts[1][0]
-    PORT = hosts[1][1]
-    USER = hosts[1][2]
-    PASSWD = hosts[1][3]
-    DATEBASE = hosts[1][4]
-    CHARSET = 'utf8'
-
-    db = DbOperate(HOST, PORT, USER, PASSWD, DATEBASE, CHARSET)
-
-    db.insert_one('烟烟烟', 'y', 'y', 'y')
-    msg = db.sybase(1, 10)
-    print(msg)
+    path = "./host"
+    db = DbOperate(path)
+    data = db.search_msg(3)
+    print(data)
     db.close()
